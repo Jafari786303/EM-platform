@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>EM Platform - Economic Management</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:'Poppins',sans-serif;
+    }
+
+    body{
+      background:#0f172a;
+      color:white;
+      overflow-x:hidden;
+      min-height:100vh;
+    }
+
+    .background{
+      position:fixed;
+      width:100%;
+      height:100%;
+      top:0;
+      left:0;
+      z-index:-1;
+
+      background:
+      radial-gradient(circle at top left,#2563eb 0%,transparent 30%),
+      radial-gradient(circle at bottom right,#06b6d4 0%,transparent 30%),
+      #0f172a;
+    }
+
+    .container{
+      width:95%;
+      max-width:1400px;
+      margin:auto;
+      padding:30px 0;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:30px;
+      flex-wrap:wrap;
+      gap:20px;
+    }
+
+    .logo{
+      font-size:32px;
+      font-weight:700;
+      color:#38bdf8;
+    }
+
+    .logout-btn{
+      width:auto;
+      padding:12px 25px;
+      display:none;
+    }
+
+    .auth-box{
+      width:100%;
+      max-width:400px;
+
+      margin:auto;
+
+      background:rgba(255,255,255,0.08);
+
+      padding:30px;
+
+      border-radius:25px;
+
+      backdrop-filter:blur(12px);
+
+      box-shadow:0 0 30px rgba(0,0,0,0.3);
+    }
+
+    .auth-box h2{
+      text-align:center;
+      margin-bottom:20px;
+      color:#38bdf8;
+    }
+
+    input,select{
+      width:100%;
+      padding:15px;
+      margin-top:12px;
+
+      border:none;
+      border-radius:15px;
+
+      background:rgba(255,255,255,0.1);
+
+      color:white;
+      font-size:15px;
+    }
+
+    input::placeholder{
+      color:#cbd5e1;
+    }
+
+    option{
+      color:black;
+    }
+
+    button{
+      width:100%;
+      padding:15px;
+      margin-top:15px;
+
+      border:none;
+      border-radius:15px;
+
+      background:linear-gradient(90deg,#06b6d4,#3b82f6);
+
+      color:white;
+
+      font-size:15px;
+      font-weight:600;
+
+      cursor:pointer;
+
+      transition:0.3s;
+    }
+
+    button:hover{
+      transform:translateY(-2px);
+      box-shadow:0 10px 20px rgba(59,130,246,0.3);
+    }
+
+    .google-btn{
+      background:white;
+      color:black;
+    }
+
+    .dashboard{
+      display:none;
+    }
+
+    .welcome{
+      font-size:24px;
+      margin-bottom:25px;
+    }
+
+    .cards{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+      gap:20px;
+
+      margin-bottom:30px;
+    }
+
+    .card{
+      background:rgba(255,255,255,0.08);
+
+      padding:25px;
+
+      border-radius:25px;
+
+      backdrop-filter:blur(12px);
+
+      box-shadow:0 0 30px rgba(0,0,0,0.2);
+    }
+
+    .card h3{
+      color:#cbd5e1;
+      margin-bottom:10px;
+    }
+
+    .money{
+      font-size:34px;
+      font-weight:700;
+    }
+
+    .income{
+      color:#22c55e;
+    }
+
+    .expense{
+      color:#ef4444;
+    }
+
+    .balance{
+      color:#38bdf8;
+    }
+
+    .main-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:25px;
+    }
+
+    @media(max-width:900px){
+
+      .main-grid{
+        grid-template-columns:1fr;
+      }
+
+    }
+
+    .panel{
+      background:rgba(255,255,255,0.08);
+
+      padding:25px;
+
+      border-radius:25px;
+
+      backdrop-filter:blur(12px);
+    }
+
+    .panel h2{
+      margin-bottom:20px;
+      color:#38bdf8;
+    }
+
+    .transaction{
+      background:rgba(255,255,255,0.07);
+
+      padding:15px;
+
+      border-radius:15px;
+
+      margin-bottom:12px;
+
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .transaction small{
+      color:#cbd5e1;
+    }
+
+    .plus{
+      color:#22c55e;
+      font-weight:700;
+    }
+
+    .minus{
+      color:#ef4444;
+      font-weight:700;
+    }
+
+    .overview{
+      margin-top:25px;
+
+      background:linear-gradient(90deg,#1e293b,#0f172a);
+
+      padding:20px;
+
+      border-radius:20px;
+
+      border:1px solid rgba(255,255,255,0.1);
+    }
+
+  </style>
+
+</head>
+<body>
+
+<div class="background"></div>
+
+<div class="container">
+
+  <div class="topbar">
+
+    <div class="logo">
+      🏦 EM Platform
+    </div>
+
+    <button
+      onclick="logout()"
+      class="logout-btn"
+      id="logoutBtn"
+    >
+      Logout
+    </button>
+
+  </div>
+
+  <!-- AUTH -->
+  <div class="auth-box" id="authBox">
+
+    <h2>Economic Management Platform</h2>
+
+    <input
+      type="email"
+      id="email"
+      placeholder="Email"
+    >
+
+    <input
+      type="password"
+      id="password"
+      placeholder="Password"
+    >
+
+    <button onclick="register()">
+      Create Account
+    </button>
+
+    <button onclick="login()">
+      Login
+    </button>
+
+    <button
+      class="google-btn"
+      onclick="googleLogin()"
+    >
+      Continue With Google
+    </button>
+
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="dashboard" id="dashboard">
+
+    <div
+      class="welcome"
+      id="welcomeText"
+    ></div>
+
+    <div class="cards">
+
+      <div class="card">
+
+        <h3>Total Income</h3>
+
+        <div
+          class="money income"
+          id="income"
+        >
+          $0
+        </div>
+
+      </div>
+
+      <div class="card">
+
+        <h3>Total Expenses</h3>
+
+        <div
+          class="money expense"
+          id="expense"
+        >
+          $0
+        </div>
+
+      </div>
+
+      <div class="card">
+
+        <h3>Current Balance</h3>
+
+        <div
+          class="money balance"
+          id="balance"
+        >
+          $0
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="main-grid">
+
+      <!-- LEFT -->
+      <div class="panel">
+
+        <h2>Add Transaction</h2>
+
+        <input
+          type="text"
+          id="title"
+          placeholder="Transaction Title"
+        >
+
+        <input
+          type="number"
+          id="amount"
+          placeholder="Amount"
+        >
+
+        <select id="type">
+
+          <option value="income">
+            Income
+          </option>
+
+          <option value="expense">
+            Expense
+          </option>
+
+        </select>
+
+        <button onclick="addTransaction()">
+          Save Transaction
+        </button>
+
+        <div class="overview">
+
+          <h3>Monthly Overview</h3>
+
+          <br>
+
+          <p id="monthlyOverview">
+            Monthly report will appear here.
+          </p>
+
+        </div>
+
+      </div>
+
+      <!-- RIGHT -->
+      <div class="panel">
+
+        <h2>Recent Transactions</h2>
+
+        <div id="transactions"></div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script type="module">
+
+  import { initializeApp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+  import {
+
+    getAuth,
+
+    createUserWithEmailAndPassword,
+
+    signInWithEmailAndPassword,
+
+    onAuthStateChanged,
+
+    signOut,
+
+    GoogleAuthProvider,
+
+    signInWithPopup
+
+  }
+
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  import {
+
+    getDatabase,
+
+    ref,
+
+    push,
+
+    onValue
+
+  }
+
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  // FIREBASE CONFIG
+  const firebaseConfig = {
+
+    apiKey: "AIzaSyClBe-zc5NiC8heyxHDZShkxDTrfTDPpcY",
+
+    authDomain: "online-city-2608d.firebaseapp.com",
+
+    databaseURL:
+    "https://online-city-2608d-default-rtdb.firebaseio.com",
+
+    projectId: "online-city-2608d",
+
+    storageBucket:
+    "online-city-2608d.firebasestorage.app",
+
+    messagingSenderId: "391100699192",
+
+    appId:
+    "1:391100699192:web:66ac9be5a47361ebf0cccd",
+
+    measurementId: "G-9WS4E5ZXHQ"
+
+  };
+
+  // INITIALIZE
+  const app = initializeApp(firebaseConfig);
+
+  const auth = getAuth(app);
+
+  const db = getDatabase(app);
+
+  const provider = new GoogleAuthProvider();
+
+  // REGISTER
+  window.register = function(){
+
+    const email =
+    document.getElementById("email").value;
+
+    const password =
+    document.getElementById("password").value;
+
+    createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    )
+
+    .then(()=>{
+
+      alert("Account Created Successfully");
+
+    })
+
+    .catch((error)=>{
+
+      alert(error.message);
+
+    });
+
+  }
+
+  // LOGIN
+  window.login = function(){
+
+    const email =
+    document.getElementById("email").value;
+
+    const password =
+    document.getElementById("password").value;
+
+    signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    )
+
+    .then(()=>{
+
+      alert("Login Successful");
+
+    })
+
+    .catch((error)=>{
+
+      alert(error.message);
+
+    });
+
+  }
+
+  // GOOGLE LOGIN
+  window.googleLogin = function(){
+
+    signInWithPopup(auth, provider)
+
+    .then((result)=>{
+
+      alert(
+        "Welcome " +
+        result.user.displayName
+      );
+
+    })
+
+    .catch((error)=>{
+
+      alert(error.message);
+
+    });
+
+  }
+
+  // LOGOUT
+  window.logout = function(){
+
+    signOut(auth);
+
+  }
+
+  // AUTH STATE
+  onAuthStateChanged(auth,(user)=>{
+
+    if(user){
+
+      document
+      .getElementById("authBox")
+      .style.display="none";
+
+      document
+      .getElementById("dashboard")
+      .style.display="block";
+
+      document
+      .getElementById("logoutBtn")
+      .style.display="block";
+
+      document
+      .getElementById("welcomeText")
+      .innerHTML =
+      "Welcome, <b>" +
+      (user.displayName || user.email) +
+      "</b>";
+
+      loadTransactions(user.uid);
+
+    }
+
+    else{
+
+      document
+      .getElementById("authBox")
+      .style.display="block";
+
+      document
+      .getElementById("dashboard")
+      .style.display="none";
+
+      document
+      .getElementById("logoutBtn")
+      .style.display="none";
+
+    }
+
+  });
+
+  // ADD TRANSACTION
+  window.addTransaction = function(){
+
+    const title =
+    document.getElementById("title").value;
+
+    const amount =
+    document.getElementById("amount").value;
+
+    const type =
+    document.getElementById("type").value;
+
+    const user = auth.currentUser;
+
+    if(!title || !amount){
+
+      alert("Please fill all fields");
+
+      return;
+    }
+
+    push(
+
+      ref(db,"transactions/" + user.uid),
+
+      {
+
+        title:title,
+
+        amount:Number(amount),
+
+        type:type,
+
+        date:
+        new Date().toLocaleDateString(),
+
+        timestamp:Date.now()
+
+      }
+
+    );
+
+    document.getElementById("title").value="";
+    document.getElementById("amount").value="";
+
+  }
+
+  // LOAD TRANSACTIONS
+  function loadTransactions(uid){
+
+    const transactionsRef =
+    ref(db,"transactions/" + uid);
+
+    onValue(transactionsRef,(snapshot)=>{
+
+      const data = snapshot.val();
+
+      let html = "";
+
+      let income = 0;
+      let expense = 0;
+
+      if(data){
+
+        const entries =
+        Object.values(data).reverse();
+
+        entries.forEach(item=>{
+
+          if(item.type==="income"){
+
+            income += item.amount;
+
+          }
+
+          else{
+
+            expense += item.amount;
+
+          }
+
+          html += `
+
+          <div class="transaction">
+
+            <div>
+
+              <h4>${item.title}</h4>
+
+              <small>${item.date}</small>
+
+            </div>
+
+            <div class="${
+              item.type==="income"
+              ? "plus"
+              : "minus"
+            }">
+
+              ${
+                item.type==="income"
+                ? "+"
+                : "-"
+              }
+
+              $${item.amount}
+
+            </div>
+
+          </div>
+
+          `;
+
+        });
+
+      }
+
+      document
+      .getElementById("transactions")
+      .innerHTML = html;
+
+      document
+      .getElementById("income")
+      .innerHTML =
+      "$" + income;
+
+      document
+      .getElementById("expense")
+      .innerHTML =
+      "$" + expense;
+
+      const balance =
+      income - expense;
+
+      document
+      .getElementById("balance")
+      .innerHTML =
+      "$" + balance;
+
+      // MONTHLY OVERVIEW
+      let overview = "";
+
+      if(balance > 0){
+
+        overview =
+        "Excellent month. You saved $" +
+        balance;
+
+      }
+
+      else if(balance < 0){
+
+        overview =
+        "Warning. Expenses exceeded income by $" +
+        Math.abs(balance);
+
+      }
+
+      else{
+
+        overview =
+        "Balanced month with no savings or losses.";
+
+      }
+
+      overview +=
+
+      "<br><br>Total Income: $" +
+      income +
+
+      "<br>Total Expenses: $" +
+      expense +
+
+      "<br>Current Balance: $" +
+      balance;
+
+      document
+      .getElementById("monthlyOverview")
+      .innerHTML = overview;
+
+    });
+
+  }
+
+</script>
+
+</body>
+</html>
