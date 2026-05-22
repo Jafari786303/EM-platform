@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>EM Platform - Economic Management</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
+
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
@@ -70,7 +72,6 @@
     .auth-box{
       width:100%;
       max-width:400px;
-
       margin:auto;
 
       background:rgba(255,255,255,0.08);
@@ -101,6 +102,7 @@
       background:rgba(255,255,255,0.1);
 
       color:white;
+
       font-size:15px;
     }
 
@@ -155,7 +157,6 @@
       display:grid;
       grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
       gap:20px;
-
       margin-bottom:30px;
     }
 
@@ -374,7 +375,7 @@
 
     <div class="main-grid">
 
-      <!-- LEFT -->
+      <!-- LEFT PANEL -->
       <div class="panel">
 
         <h2>Add Transaction</h2>
@@ -421,7 +422,7 @@
 
       </div>
 
-      <!-- RIGHT -->
+      <!-- RIGHT PANEL -->
       <div class="panel">
 
         <h2>Recent Transactions</h2>
@@ -438,7 +439,10 @@
 
 <script type="module">
 
+  // FIREBASE IMPORTS
+
   import { initializeApp }
+
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
   import {
@@ -449,13 +453,13 @@
 
     signInWithEmailAndPassword,
 
-    onAuthStateChanged,
-
-    signOut,
+    signInWithPopup,
 
     GoogleAuthProvider,
 
-    signInWithPopup
+    onAuthStateChanged,
+
+    signOut
 
   }
 
@@ -463,53 +467,55 @@
 
   import {
 
-    getDatabase,
+    getFirestore,
 
-    ref,
+    collection,
 
-    push,
+    addDoc,
 
-    onValue
+    query,
+
+    where,
+
+    onSnapshot
 
   }
 
-  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   // FIREBASE CONFIG
+
   const firebaseConfig = {
 
     apiKey: "AIzaSyClBe-zc5NiC8heyxHDZShkxDTrfTDPpcY",
 
     authDomain: "online-city-2608d.firebaseapp.com",
 
-    databaseURL:
-    "https://online-city-2608d-default-rtdb.firebaseio.com",
-
     projectId: "online-city-2608d",
 
-    storageBucket:
-    "online-city-2608d.firebasestorage.app",
+    storageBucket: "online-city-2608d.firebasestorage.app",
 
     messagingSenderId: "391100699192",
 
-    appId:
-    "1:391100699192:web:66ac9be5a47361ebf0cccd",
+    appId: "1:391100699192:web:66ac9be5a47361ebf0cccd",
 
     measurementId: "G-9WS4E5ZXHQ"
 
   };
 
-  // INITIALIZE
+  // INITIALIZE FIREBASE
+
   const app = initializeApp(firebaseConfig);
 
   const auth = getAuth(app);
 
-  const db = getDatabase(app);
+  const db = getFirestore(app);
 
   const provider = new GoogleAuthProvider();
 
   // REGISTER
-  window.register = function(){
+
+  window.register = async function(){
 
     const email =
     document.getElementById("email").value;
@@ -517,28 +523,29 @@
     const password =
     document.getElementById("password").value;
 
-    createUserWithEmailAndPassword(
-      auth,
-      email,
-      password
-    )
+    try{
 
-    .then(()=>{
+      await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
       alert("Account Created Successfully");
 
-    })
+    }
 
-    .catch((error)=>{
+    catch(error){
 
       alert(error.message);
 
-    });
+    }
 
   }
 
   // LOGIN
-  window.login = function(){
+
+  window.login = async function(){
 
     const email =
     document.getElementById("email").value;
@@ -546,71 +553,75 @@
     const password =
     document.getElementById("password").value;
 
-    signInWithEmailAndPassword(
-      auth,
-      email,
-      password
-    )
+    try{
 
-    .then(()=>{
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
       alert("Login Successful");
 
-    })
+    }
 
-    .catch((error)=>{
+    catch(error){
 
       alert(error.message);
 
-    });
+    }
 
   }
 
   // GOOGLE LOGIN
-  window.googleLogin = function(){
 
-    signInWithPopup(auth, provider)
+  window.googleLogin = async function(){
 
-    .then((result)=>{
+    try{
+
+      const result =
+      await signInWithPopup(auth, provider);
 
       alert(
         "Welcome " +
         result.user.displayName
       );
 
-    })
+    }
 
-    .catch((error)=>{
+    catch(error){
 
       alert(error.message);
 
-    });
+    }
 
   }
 
   // LOGOUT
-  window.logout = function(){
 
-    signOut(auth);
+  window.logout = async function(){
+
+    await signOut(auth);
 
   }
 
   // AUTH STATE
+
   onAuthStateChanged(auth,(user)=>{
 
     if(user){
 
       document
       .getElementById("authBox")
-      .style.display="none";
+      .style.display = "none";
 
       document
       .getElementById("dashboard")
-      .style.display="block";
+      .style.display = "block";
 
       document
       .getElementById("logoutBtn")
-      .style.display="block";
+      .style.display = "block";
 
       document
       .getElementById("welcomeText")
@@ -627,22 +638,23 @@
 
       document
       .getElementById("authBox")
-      .style.display="block";
+      .style.display = "block";
 
       document
       .getElementById("dashboard")
-      .style.display="none";
+      .style.display = "none";
 
       document
       .getElementById("logoutBtn")
-      .style.display="none";
+      .style.display = "none";
 
     }
 
   });
 
   // ADD TRANSACTION
-  window.addTransaction = function(){
+
+  window.addTransaction = async function(){
 
     const title =
     document.getElementById("title").value;
@@ -660,103 +672,116 @@
       alert("Please fill all fields");
 
       return;
+
     }
 
-    push(
+    try{
 
-      ref(db,"transactions/" + user.uid),
+      await addDoc(
 
-      {
+        collection(db,"transactions"),
 
-        title:title,
+        {
 
-        amount:Number(amount),
+          userId:user.uid,
 
-        type:type,
+          title:title,
 
-        date:
-        new Date().toLocaleDateString(),
+          amount:Number(amount),
 
-        timestamp:Date.now()
+          type:type,
 
-      }
+          date:
+          new Date().toLocaleDateString(),
 
-    );
+          timestamp:Date.now()
 
-    document.getElementById("title").value="";
-    document.getElementById("amount").value="";
+        }
+
+      );
+
+      document.getElementById("title").value="";
+      document.getElementById("amount").value="";
+
+    }
+
+    catch(error){
+
+      alert(error.message);
+
+    }
 
   }
 
   // LOAD TRANSACTIONS
+
   function loadTransactions(uid){
 
-    const transactionsRef =
-    ref(db,"transactions/" + uid);
+    const q = query(
 
-    onValue(transactionsRef,(snapshot)=>{
+      collection(db,"transactions"),
 
-      const data = snapshot.val();
+      where("userId","==",uid)
+
+    );
+
+    onSnapshot(q,(snapshot)=>{
 
       let html = "";
 
       let income = 0;
+
       let expense = 0;
 
-      if(data){
+      snapshot.forEach((doc)=>{
 
-        const entries =
-        Object.values(data).reverse();
+        const item = doc.data();
 
-        entries.forEach(item=>{
+        if(item.type==="income"){
 
-          if(item.type==="income"){
+          income += item.amount;
 
-            income += item.amount;
+        }
 
-          }
+        else{
 
-          else{
+          expense += item.amount;
 
-            expense += item.amount;
+        }
 
-          }
+        html += `
 
-          html += `
+        <div class="transaction">
 
-          <div class="transaction">
+          <div>
 
-            <div>
+            <h4>${item.title}</h4>
 
-              <h4>${item.title}</h4>
-
-              <small>${item.date}</small>
-
-            </div>
-
-            <div class="${
-              item.type==="income"
-              ? "plus"
-              : "minus"
-            }">
-
-              ${
-                item.type==="income"
-                ? "+"
-                : "-"
-              }
-
-              $${item.amount}
-
-            </div>
+            <small>${item.date}</small>
 
           </div>
 
-          `;
+          <div class="${
+            item.type==="income"
+            ? "plus"
+            : "minus"
+          }">
 
-        });
+            ${
+              item.type==="income"
+              ? "+"
+              : "-"
+            }
 
-      }
+            $${item.amount}
+
+          </div>
+
+        </div>
+
+        `;
+
+      });
 
       document
       .getElementById("transactions")
@@ -780,7 +805,6 @@
       .innerHTML =
       "$" + balance;
 
-      // MONTHLY OVERVIEW
       let overview = "";
 
       if(balance > 0){
